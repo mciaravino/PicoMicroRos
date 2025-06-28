@@ -8,17 +8,10 @@
 #include <rmw_microros/rmw_microros.h>
 
 #include "pico/stdlib.h"
-//#include "pico_uart_transports.h"
+#include "pico_uart_transports.h"
 #include "pico/cyw43_arch.h"
 
-#include "picow_udp_transports.h" 
-
-#if 0
-extern bool picow_udp_transport_open(struct uxrCustomTransport * transport);
-extern bool picow_udp_transport_close(struct uxrCustomTransport * transport);
-extern size_t picow_udp_transport_write(struct uxrCustomTransport* transport, const uint8_t * buf, size_t len, uint8_t * err);
-extern size_t picow_udp_transport_read(struct uxrCustomTransport* transport, uint8_t* buf, size_t len, int timeout, uint8_t* err);
-#endif
+//const uint LED_PIN = 25;
 
 rcl_publisher_t publisher;
 std_msgs__msg__Int32 msg;
@@ -48,7 +41,6 @@ void timer_callback(rcl_timer_t *timer, int64_t last_call_time)
 
 int main()
 {
-    #if 0
     rmw_uros_set_custom_transport(
 		true,
 		NULL,
@@ -57,7 +49,6 @@ int main()
 		pico_serial_transport_write,
 		pico_serial_transport_read
 	);
-#endif
 
     //gpio_init(LED_PIN);
     //gpio_set_dir(LED_PIN, GPIO_OUT);
@@ -68,15 +59,6 @@ int main()
     cyw43_arch_enable_sta_mode();
     cyw43_arch_wifi_connect_timeout_ms(ssid, pass, CYW43_AUTH_WPA2_AES_PSK, 10000);
     
-    rmw_uros_set_custom_transport(
-	false,          // must be false for UDP
-	&picow_params, //NULL,
-	picow_udp_transport_open,
-	picow_udp_transport_close,
-	picow_udp_transport_write,
-	picow_udp_transport_read
-	);
-    
     rcl_timer_t timer;
     rcl_node_t node;
     rcl_allocator_t allocator;
@@ -85,30 +67,15 @@ int main()
 
     allocator = rcl_get_default_allocator();
 
-    // Wait for agent successful ping for 1 minutes.
-    const int timeout_ms = 1000;
-    const uint8_t attempts = 60;
-    rcl_ret_t ret = 0;
-    //uint8_t blink_led = 1;
+    // Wait for agent successful ping for 2 minutes.
+    const int timeout_ms = 1000; 
+    const uint8_t attempts = 120;
 
-    int loop = 0;
-    for ( ; loop < attempts; loop++) {
-        printf("uros_ping_agent: loop[%d]\n", loop);
-        ret = rmw_uros_ping_agent(timeout_ms, 1);
+    rcl_ret_t ret = rmw_uros_ping_agent(timeout_ms, attempts);
 
-
-        if (ret == RCL_RET_OK)
-        {
-            // Reachable agent, exiting loop.
-            //cyw43_arch_gpio_put(CYW43_WL_GPIO_LED_PIN, 0);
-            break;
-        }
-        //cyw43_arch_gpio_put(CYW43_WL_GPIO_LED_PIN, blink_led);
-        //blink_led = blink_led ? 0 : 1;
-    }
-    if (loop == attempts) {
+    if (ret != RCL_RET_OK)
+    {
         // Unreachable agent, exiting program.
-        //cyw43_arch_gpio_put(CYW43_WL_GPIO_LED_PIN, 0);
         return ret;
     }
 
@@ -138,7 +105,5 @@ int main()
     {
         rclc_executor_spin_some(&executor, RCL_MS_TO_NS(100));
     }
-    cyw43_arch_deinit();
-    
     return 0;
 }
