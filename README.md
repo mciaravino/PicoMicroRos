@@ -1,104 +1,188 @@
-![banner](.images/banner-dark-theme.png#gh-dark-mode-only)
-![banner](.images/banner-light-theme.png#gh-light-mode-only)
+# Setup Instructions
 
-# micro-ROS module for Raspberry Pi Pico SDK
+> **Note:** It's recommended to run each command one line at a time to avoid errors and make debugging easier.
 
-[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
+---
 
-## Getting Started
+## 1. Install Prerequisites
 
-Here is a quick way to compile the example given in this repository.
-
-### Dependencies
-
-micro-ROS precompiled library is compiled using `arm-none-eabi-gcc` [9.3.1](https://developer.arm.com/-/media/Files/downloads/gnu-rm/9-2020q2/gcc-arm-none-eabi-9-2020-q2-update-x86_64-linux.tar.bz2), a compatible version is expected when building the micro-ROS project.
-You can specify a compiler path with the following command:
+Run the following commands to install required packages:
 
 ```bash
-# Configure environment
-echo "export PICO_TOOLCHAIN_PATH=..." >> ~/.bashrc
-source ~/.bashrc
+sudo apt install build-essential
+sudo apt install cmake
+sudo apt install gcc-arm-none-eabi
+sudo apt install libnewlib-arm-none-eabi
+sudo apt install doxygen
+sudo apt install git
+sudo apt install python3
 ```
 
-### 1. Install Pico SDK
-First, make sure the Pico SDK is properly installed and configured:
+---
+
+## 2. Install the Pico Toolchain
+
+1. Visit the [micro-ROS getting started](https://micro.ros.org/docs/tutorials/advanced/microxrcedds/raspberry_pi_pico/) page.
+2. Scroll to the **Dependencies** section and find the **GCC ARM Embedded Toolchain** (version 9.3.1 or similar).
+3. Download the archive (e.g., `.bz2` file) by right-clicking and saving it.
+4. Extract the archive.
+5. Move the extracted folder to your home directory:
+
+    ```bash
+    mv gcc-arm-none-eabi-9-2020-q2-update ~/
+    ```
+
+6. Add the toolchain path to your `~/.bashrc`:
+
+    ```bash
+    export PICO_TOOLCHAIN_PATH=$HOME/gcc-arm-none-eabi-9-2020-q2-update/
+    ```
+
+7. Apply the changes:
+
+    ```bash
+    source ~/.bashrc
+    ```
+
+---
+
+## 3. Download and Configure the Pico SDK
+
+1. Download the SDK:
+
+    ```bash
+    cd ~
+    git clone --recurse-submodules https://github.com/raspberrypi/pico-sdk.git
+    ```
+
+2. Add the SDK path to your `~/.bashrc`:
+
+    ```bash
+    export PICO_SDK_PATH=$HOME/pico-sdk
+    ```
+
+3. Apply the changes:
+
+    ```bash
+    source ~/.bashrc
+    ```
+
+---
+
+## 4. Download and Install `picotool`
+
+1. Run the following commands:
+
+    ```bash
+    cd ~
+    git clone https://github.com/raspberrypi/picotool.git
+    cd picotool
+    mkdir build
+    cd build
+    cmake ..
+    make
+    sudo make install
+    ```
+
+2. Verify the installation:
+
+    ```bash
+    picotool
+    ```
+
+    If installed correctly, this command will display usage information.
+
+---
+## 5. Clone the Project Repository
+
+Create a new directory and clone both the Pico SDK and the project repository:
 
 ```bash
-# Install dependencies
-sudo apt install cmake g++ gcc-arm-none-eabi doxygen libnewlib-arm-none-eabi git python3
-git clone --recurse-submodules https://github.com/raspberrypi/pico-sdk.git $HOME/pico-sdk
-
-# Configure environment
-echo "export PICO_SDK_PATH=$HOME/pico-sdk" >> ~/.bashrc
-source ~/.bashrc
+mkdir -p ~/micro_ros_ws/src
+cd ~/micro_ros_ws/src
+git clone https://github.com/RIPLaboratoryUH/PicoMicroRos.git
 ```
 
-### 2. Compile Example
+This will create a workspace directory and download the project files you'll use to build and flash micro-ROS on the Raspberry Pi Pico.
 
-Once the Pico SDK is ready, compile the example:
+---
+
+## 6. Build the micro-ROS Project
+
+Now navigate to your micro-ROS folder, create a build directory, and compile the project.
+
+> ⚠️ **Important:** Make any necessary changes to the setup **before** this step.  
+> The two main files you may want to edit are:
+>
+> - `CMakeLists.txt`  
+> - `pico_micro_ros_example.c`
+>
+> For example, if you're using a **Raspberry Pi Pico 2W** instead of a **Pico W**, you need to modify line 2 of `CMakeLists.txt`.
+
+Run the following commands to build:
 
 ```bash
-cd micro_ros_raspberrypi_pico_sdk
+cd ~/micro_ros_ws/src/micro_ros_raspberrypi_pico_sdk/
 mkdir build
 cd build
 cmake ..
 make
 ```
+## 7. Flash the Raspberry Pi Pico
 
-To flash, hold the boot button, plug the USB and run:
-```
-cp pico_micro_ros_example.uf2 /media/$USER/RPI-RP2
-```
+To flash the compiled program to your Pico:
 
-### 3. Start Micro-ROS Agent
-Micro-ROS follows the client-server architecture, so you need to start the Micro-ROS Agent.
-You can do so using the [micro-ros-agent Snap](https://snapcraft.io/micro-ros-agent) (follow the link for installation details):
+1. Hold down the **BOOTSEL** button on the Pico as you plug it into your computer via USB.  
+   The Pico should mount as a USB mass storage device.
 
-```bash
-micro-ros-agent serial --dev /dev/ttyACM0 -b 115200
-```
+2. Run the appropriate command based on your device:
 
-or using the [micro-ros-agent Docker](https://hub.docker.com/r/microros/micro-ros-agent):
-```bash
-docker run -it --rm -v /dev:/dev --privileged --net=host microros/micro-ros-agent:kilted serial --dev /dev/ttyACM0 -b 115200
-```
-
-## What files are relevant?
-- `pico_uart_transport.c`: Contains the board specific implementation of the serial transport (no change needed).
-- `CMakeLists.txt`: CMake file.
-- `pico_micro_ros_example.c`: The actual ROS 2 publisher.
-
-## How to build the precompiled library
-
-Micro-ROS is precompiled for Raspberry Pi Pico in [`libmicroros`](libmicroros).
-If you want to compile it by yourself:
+### For Raspberry Pi Pico W:
 
 ```bash
-docker pull microros/micro_ros_static_library_builder:kilted
-docker run -it --rm -v $(pwd):/project microros/micro_ros_static_library_builder:kilted
+cd ~/micro_ros_ws/src/micro_ros_raspberrypi_pico_sdk/build/
+cp ./pico_micro_ros_example.uf2 /media/$USER/RPI-RP2
 ```
 
-Note that folders added to `microros_static_library/library_generation/extra_packages` and entries added to `microros_static_library/library_generation/extra_packages/extra_packages.repos` will be taken into account by this build system.
-## How to use Pico SDK?
+### For Raspberry Pi Pico 2W:
 
-Here is a Raspberry Pi Pico C/C++ SDK documentation:
-https://datasheets.raspberrypi.org/pico/raspberry-pi-pico-c-sdk.pdf
-## Purpose of the Project
+```bash
+cd ~/micro_ros_ws/src/micro_ros_raspberrypi_pico_sdk/build/
+cp ./pico_micro_ros_example.uf2 /media/$USER/RP2350
+```
 
-This software is not ready for production use. It has neither been developed nor
-tested for a specific use case. However, the license conditions of the
-applicable Open Source licenses allow you to adapt the software to your needs.
-Before using it in a safety relevant setting, make sure that the software
-fulfills your requirements and adjust it according to any applicable safety
-standards, e.g., ISO 26262.
+This will copy the compiled `.uf2` binary to your Pico, flashing the firmware.
 
-## License
+## 8. Install Docker and micro-ROS Docker Plugin
 
-This repository is open-sourced under the Apache-2.0 license. See the [LICENSE](LICENSE) file for details.
+To build static libraries for micro-ROS, you'll need Docker.
 
-For a list of other open-source components included in this repository,
-see the file [3rd-party-licenses.txt](3rd-party-licenses.txt).
+1. Follow the official Docker installation guide for Ubuntu:  
+   👉 [Install Docker on Ubuntu](https://docs.docker.com/engine/install/ubuntu/#install-using-the-repository)
 
-## Known Issues/Limitations
+2. Once Docker is successfully installed, pull the micro-ROS static library builder image by running:
 
-There are no known limitations.
+```bash
+sudo docker pull microros/micro_ros_static_library_builder:jazzy
+```
+## 9. Run the micro-ROS Agent
+
+You’re now ready to run the micro-ROS agent and communicate with your Pico.
+
+1. Disconnect the Pico from USB and power it externally.
+2. Then run the following command to launch the micro-ROS agent on your host machine:
+
+```bash
+sudo docker run -it --rm -v /dev:/dev --privileged --net=host microros/micro-ros-agent:jazzy udp4 --dev -p 8888
+```
+
+> ⏱️ **Note:** The Pico is programmed to search for the host agent for **1 minute** after startup. You can change this duration in the source code if needed.
+
+3. If you have ROS 2 installed, verify communication by listing active topics:
+
+```bash
+ros2 topic list
+```
+
+You should now see your micro-ROS topic in the list.
+
