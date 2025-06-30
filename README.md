@@ -127,7 +127,7 @@ Now navigate to your micro-ROS folder, create a build directory, and compile the
 Run the following commands to build:
 
 ```bash
-cd ~/micro_ros_ws/src/micro_ros_raspberrypi_pico_sdk/
+cd ~/micro_ros_ws/src/PicoMicroRos/
 mkdir build
 cd build
 cmake ..
@@ -145,14 +145,14 @@ To flash the compiled program to your Pico:
 ### For Raspberry Pi Pico W:
 
 ```bash
-cd ~/micro_ros_ws/src/micro_ros_raspberrypi_pico_sdk/build/
+cd ~/micro_ros_ws/src/PicoMicroRos/build/
 cp ./pico_micro_ros_example.uf2 /media/$USER/RPI-RP2
 ```
 
 ### For Raspberry Pi Pico 2W:
 
 ```bash
-cd ~/micro_ros_ws/src/micro_ros_raspberrypi_pico_sdk/build/
+cd ~/micro_ros_ws/src/PicoMicroRos/build/
 cp ./pico_micro_ros_example.uf2 /media/$USER/RP2350
 ```
 
