@@ -95,7 +95,7 @@ sudo apt install python3
 ---
 ## 5. Clone the Project Repository
 
-Create a new directory and clone both the Pico SDK and the project repository:
+Create a new directory and clone the project repository:
 
 ```bash
 mkdir -p ~/micro_ros_ws/src
