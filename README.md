@@ -116,9 +116,10 @@ Now navigate to your micro-ROS folder, create a build directory, and compile the
 >
 > - `CMakeLists.txt`  
 > - `pico_micro_ros_example.c`
+> - `picow_udp_transports.h`
 >
 > For example, if you're using a **Raspberry Pi Pico 2W** instead of a **Pico W**, you need to modify line 2 of `CMakeLists.txt`.
-
+> Also you need to update your SSID and IP address in `picow_udp_transports.txt`.
 Run the following commands to build:
 
 ```bash
