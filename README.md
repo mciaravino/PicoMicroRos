@@ -111,7 +111,8 @@ This will create a workspace directory and download the project files you'll use
 
 Now navigate to your micro-ROS folder, create a build directory, and compile the project.
 
-> ⚠️ **Important:** Make any necessary changes to the setup **before** running the build commands in this step this step.  
+> **Important:** Make any necessary changes to this setup **before** running the build commands in this step.
+> 
 > The three main files you may want to edit are:
 >
 > - `CMakeLists.txt`  
@@ -119,10 +120,9 @@ Now navigate to your micro-ROS folder, create a build directory, and compile the
 > - `picow_udp_transports.h`
 >
 > For example, if you're using a **Raspberry Pi Pico 2W** instead of a **Pico W**, you need to modify line 2 of `CMakeLists.txt`.
+> You also need to update your SSID and WiFi password in `pico_micro_ros_example.c`. This is also where you include how your sensor operates.
 > 
 > Also you need to update your IP address in `picow_udp_transports.txt`.
->
-> You also need to update your SSID and WiFi password in `pico_micro_ros_example.c`. This is also where you include how your sensor operates.
 >
 Run the following commands to build your project:
 
